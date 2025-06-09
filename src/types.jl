@@ -394,7 +394,7 @@ struct SimpleWell{SC, P, V} <: WellDomain where {SC, P}
     surface::SC
     name::Symbol
     explicit_dp::Bool
-    reference_depth::Float64
+    reference_depth::V
 end
 
 """
@@ -421,10 +421,14 @@ function SimpleWell(
         volume = 1000.0, # Regularization volume for well, not a real volume
         kwarg...
     )
-    reference_depth = convert(Float64, reference_depth)
-    volume = convert(Float64, volume)
     nr = length(reservoir_cells)
     WI, WIth, gdz = common_well_setup(nr; kwarg...)
+    T = promote_type(typeof(reference_depth), typeof(volume), eltype(WI), eltype(WIth), eltype(gdz))
+    reference_depth = convert(T, reference_depth)
+    volume = convert(T, volume)
+    WI = T.(WI)
+    WIth = T.(WIth)
+    gdz = T.(gdz)
     perf = (self = ones(Int64, nr), reservoir = vec(reservoir_cells), WI = WI, WIth = WIth, gdz = gdz)
     return SimpleWell(volume, perf, surface_conditions, name, explicit_dp, reference_depth)
 end
@@ -439,6 +443,8 @@ struct MultiSegmentWell{V, P, N, A, C, SC, S, M} <: WellDomain
     neighborship::N
     "Top node where scalar well quantities live"
     top::A
+    "End node(s) for the well"
+    end_nodes::Vector{Int64}
     "Coordinate centers of nodes"
     centers::C
     "pressure and temperature conditions at surface"
@@ -488,6 +494,7 @@ function MultiSegmentWell(reservoir_cells, volumes::AbstractVector, centers;
             accumulator_center = nothing,
             accumulator_volume = mean(volumes),
             N = nothing,
+            end_nodes = missing,
             name = :Well,
             perforation_cells = nothing,
             segment_models = nothing,
@@ -523,6 +530,11 @@ function MultiSegmentWell(reservoir_cells, volumes::AbstractVector, centers;
         N = vcat((1:nv)', (2:nc)')
     elseif maximum(N) == nv
         N = hcat([1, 2], N.+1)
+    end
+    if ismissing(end_nodes)
+        from_nodes = unique(N[1, :])
+        to_nodes = unique(N[2,:])
+        end_nodes = setdiff(to_nodes, from_nodes)
     end
     if length(size(centers)) == 3
         @assert size(centers, 3) == 1
@@ -603,7 +615,7 @@ function MultiSegmentWell(reservoir_cells, volumes::AbstractVector, centers;
     end
     accumulator = (reference_depth = reference_depth, )
     MultiSegmentWell{typeof(volumes), typeof(perf), typeof(N), typeof(accumulator), typeof(ext_centers), typeof(surface_conditions), typeof(segment_models), typeof(material_thermal_conductivity)}(
-        type, volumes, perf, N, accumulator, ext_centers, surface_conditions,
+        type, volumes, perf, N, accumulator, end_nodes, ext_centers, surface_conditions,
         name, segment_models, material_thermal_conductivity,
         material_density, material_heat_capacity, void_fraction)
 end
@@ -678,6 +690,12 @@ struct TopConditions{N, R}
 end
 
 function TopConditions(n::Int, R::DataType = Float64; density = missing, volume_fractions = missing)
+    if !ismissing(density)
+        R = promote_type(map(typeof, density)..., R)
+    end
+    if !ismissing(volume_fractions)
+        R = promote_type(map(typeof, volume_fractions)..., R)
+    end
     return TopConditions(Val(n), Val(R), density, volume_fractions)
 end
 
@@ -698,6 +716,10 @@ function JutulDarcy.TopConditions{N, T}(tc::JutulDarcy.TopConditions{N, F}) wher
     density = map(T, tc.density)
     volume_fractions = map(T, tc.volume_fractions)
     return TopConditions(density, volume_fractions)
+end
+
+function Base.convert(::Type{TopConditions{N, R}}, tc::TopConditions{N, Float64}) where {N, R}
+    return TopConditions(convert.(R, tc.density), convert.(R, tc.volume_fractions))
 end
 
 struct SurfaceWellConditions{T, R} <: ScalarVariable

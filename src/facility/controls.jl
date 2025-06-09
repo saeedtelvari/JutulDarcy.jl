@@ -1,4 +1,4 @@
-function Jutul.initialize_extra_state_fields!(state, domain::WellGroup, model)
+function Jutul.initialize_extra_state_fields!(state, domain::WellGroup, model; T = Float64)
     # Insert structure that holds well control (limits etc) that is then updated before each step
     state[:WellGroupConfiguration] = WellGroupConfiguration(domain.well_symbols)
 end
@@ -8,6 +8,9 @@ function Jutul.update_before_step_multimodel!(storage_g, model_g::MultiModel, mo
         recorder = ProgressRecorder(),
         update_explicit = true
     )
+    function value_has_promoted_type(newval::T1, oldval::T2) where {T1, T2}
+        return T1 != T2 && promote_type(T1, T2) == T1
+    end
     forces = forces_g[key]
     # Set control to whatever is on the forces
     storage = storage_g[key]
@@ -30,9 +33,16 @@ function Jutul.update_before_step_multimodel!(storage_g, model_g::MultiModel, mo
         oldctrl = req_ctrls[key]
         is_new_step = cfg.step_index != current_step
         disabled = DisabledControl()
-        well_was_disabled = op_ctrls[key] == disabled && newctrl != disabled
-        is_new_type = typeof(newctrl) != typeof(oldctrl)
-        if (is_new_step && newctrl != oldctrl) || well_was_disabled || is_new_type
+        new_is_disabled = newctrl isa DisabledControl
+        old_is_disabled = oldctrl isa DisabledControl
+        well_was_disabled = op_ctrls[key] == disabled && !new_is_disabled
+        changed = (is_new_step && newctrl != oldctrl) || well_was_disabled
+        if !changed && !well_was_disabled && !(new_is_disabled || old_is_disabled)
+            # Handle the case where controls may be identical, but a higher type
+            # might be incoming (e.g. use of AD)
+            changed = changed || value_has_promoted_type(newctrl.target.value, oldctrl.target.value)
+        end
+        if changed
             # We have a new control. Any previous control change is invalid.
             # Set both operating and requested control to the new one.
             @debug "Well $key switching from $oldctrl to $newctrl"
@@ -43,7 +53,7 @@ function Jutul.update_before_step_multimodel!(storage_g, model_g::MultiModel, mo
         if q_t isa Vector
             q_t[pos] = valid_surface_rate_for_control(q_t[pos], newctrl)
         end
-        if changed
+        if changed && !new_is_disabled
             if isnothing(cfg.limits[key])
                 cfg.limits[key] = as_limit(newctrl.target)
             else
@@ -369,6 +379,11 @@ function well_target(control::ProducerControl, target::ReservoirVoidageTarget, w
         w += S*target.weights[i]
     end
     return w/ρ_tot
+end
+
+function well_target(control::InjectorControl, target::ReinjectionTarget, well_model, well_state, surface_densities, surface_volume_fractions)
+    w = 1.0/control.mixture_density
+    return w
 end
 
 function well_target_value(q_t, control, target, source_model, well_state, rhoS, S)
