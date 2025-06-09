@@ -1533,10 +1533,10 @@ function simulate_mrst_case(fn;
         split_wells = false,
         write_mrst = false,
         write_output = true,
-        ds_max = 0.2,
-        dz_max = 0.2,
+        ds_max = 1.0,
+        dz_max = 1.0,
         dp_max_abs = nothing,
-        dp_max_rel = 0.2,
+        dp_max_rel = 0.5,
         p_min = DEFAULT_MINIMUM_PRESSURE,
         p_max = Inf,
         verbose = true,
@@ -1684,7 +1684,14 @@ function simulate_mrst_case(fn;
             if verbose
                 jutul_message("MRST model", "Writing output to $mrst_output_path.")
             end
-            write_reservoir_simulator_output_to_mrst(sim.model, states, reports, forces, mrst_output_path, parameters = parameters)
+            if mode == :mpi
+                jutul_message("MRST model", "Writing output to $mrst_output_path.")
+                write_reservoir_simulator_output_to_mrst(sim.storage.model, states, reports, forces, mrst_output_path, parameters = parameters)
+            else
+                jutul_message("MRST model", "Writing output to $mrst_output_path.")
+                write_reservoir_simulator_output_to_mrst(sim.model, states, reports, forces, mrst_output_path, parameters = parameters)
+            end
+            
         end
         ns = length(states)
         nt = length(dt)

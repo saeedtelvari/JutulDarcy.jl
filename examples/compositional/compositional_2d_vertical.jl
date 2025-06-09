@@ -15,7 +15,7 @@ h2o = MolecularProperty(0.018015268, 22.064e6, 647.096, 5.595e-05, 0.3442920843)
 co2 = MolecularProperty(0.0440098, 7.3773e6, 304.1282, 9.412e-05, 0.22394)
 
 bic = zeros(2, 2)
-
+# For a report of the errors see `julia> err`. To retry use `pkg> precompile`
 mixture = MultiComponentMixture([h2o, co2], A_ij = bic, names = ["H2O", "CO2"])
 eos = GenericCubicEOS(mixture, PengRobinson())
 # ## Set up domain and wells

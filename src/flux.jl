@@ -66,6 +66,32 @@ end
     return q
 end
 
+@inline function darcy_phase_kgrad_potential_ve(face, phase, state, model, flux_type, tpfa::TPFA{T}, upw, common = flux_primitives(face, state, model, flux_type, upw, tpfa)) where T
+    # Define and change the capillary function to UpscaledCapillaryPressure
+    # Define density functions: from EoS data (import from MRST), and then Taylor expansion functions for upscaled densities
+    # Use PermeabilityMultiplier for upscaled permeability
+    # Use two-point gravity
+    pc, ref_index = capillary_pressure(model, state)
+    ∇p, T_f, gΔz = common
+    l = tpfa.left
+    r = tpfa.right
+    S = state.Saturations # Access the Saturations matrix from the state
+    saturation_left = S[:, l] # Saturations of all phases in the left cell
+    saturation_right = S[:, r] # Saturations of all phases in the right cell
+
+    Δpc = capillary_gradient(pc, l, r, phase, ref_index)
+    ρ_avg = face_average_density(model, state, tpfa, phase)
+    if haskey(state, :PermeabilityMultiplier)
+        K_mul = state.PermeabilityMultiplier
+        m = face_average(c -> K_mul[c], tpfa)
+        T_f *= m
+    end
+    q = -T_f*(∇p + Δpc + gΔz*ρ_avg)
+    return q
+end
+
+
+
 @inline function face_average_density(model, state, tpfa, phase)
     ρ = state.PhaseMassDensities
     return phase_face_average(ρ, tpfa, phase)
