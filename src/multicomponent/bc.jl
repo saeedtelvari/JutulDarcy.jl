@@ -28,21 +28,32 @@ function apply_flow_bc!(acc, q, bc, model::SimulationModel{<:Any, T}, state, tim
         # Pressure inside is higher than outside, flow out from domain
         sys = model.system
         phase_ix = phase_indices(sys)
+        
+        # Calculate total mobility for proper flux distribution
+        λ_t = 0.0
+        for ph in 1:nph
+            λ_t += mob[ph, c]
+        end
+        
         if has_other_phase(sys)
             a, l, v = phase_ix
             ncomp_mix = ncomp-1
-            acc[ncomp_mix+1] += rho[a, c]*mob[a, c]*q
+            # Water phase flux
+            q_a = q * mob[a, c] / λ_t * rho[a, c]
+            acc[ncomp_mix+1] += q_a
         else
             ncomp_mix = ncomp
             l, v = phase_ix
         end
-        q_l = rho[l, c]*mob[l, c]*q
-        q_v = rho[l, c]*mob[l, c]*q
+        
+        # Distribute total flux between liquid and vapor phases based on relative mobilities
+        q_l = q * mob[l, c] / λ_t * rho[l, c]
+        q_v = q * mob[v, c] / λ_t * rho[v, c]
+        
         for i in 1:ncomp_mix
             acc[i] += q_l*X[i, c] + q_v*Y[i, c]
         end
     else
-        # TODO: This is duplicated code, factor out...
         # Injection of mass
         λ_t = 0.0
         for ph in 1:nph
@@ -65,7 +76,7 @@ function apply_flow_bc!(acc, q, bc, model::SimulationModel{<:Any, T}, state, tim
             end
             for i in 1:ncomp
                 F = state.TotalMasses[i, c]/total
-                acc[c] += q*rho_inj*λ_t*F
+                acc[i] += q*rho_inj*λ_t*F
             end
         else
             @assert length(f_inj) == ncomp
