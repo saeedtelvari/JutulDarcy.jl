@@ -1,0 +1,52 @@
+﻿[
+  [
+    "E:\\Github Repos\\JutulDarcy.jl\\CHANGELOG.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\README.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\.github\\workflows\\CI.yml",
+    "E:\\Github Repos\\JutulDarcy.jl\\.github\\workflows\\CompatHelper.yml",
+    "E:\\Github Repos\\JutulDarcy.jl\\.github\\workflows\\DocPreviewCleanup.yml",
+    "E:\\Github Repos\\JutulDarcy.jl\\.github\\workflows\\TagBot.yml",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\index.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\extras\\faq.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\extras\\paper_list.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\extras\\refs.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\first_ex.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\highlevel.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\intro.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\validation.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\advanced\\compiled.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\advanced\\gpu.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\advanced\\mpi.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\basics\\forces.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\basics\\input_files.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\basics\\models.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\basics\\package.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\basics\\parameters.md"
+  ],
+  [
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\basics\\plotting.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\basics\\primary.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\basics\\secondary.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\basics\\solution.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\basics\\systems.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\basics\\utilities.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\man\\basics\\wells.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\notebooks\\empty.md",
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\ref\\jutul.md"
+  ],
+  [
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\assets\\ex_plot.png"
+  ],
+  [
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\assets\\logo.png"
+  ],
+  [
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\assets\\logo_compact.png"
+  ],
+  [
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\assets\\logo_tight.png"
+  ],
+  [
+    "E:\\Github Repos\\JutulDarcy.jl\\docs\\src\\assets\\logo_wide.png"
+  ]
+]
